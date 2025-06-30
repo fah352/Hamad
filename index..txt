@@ -1,0 +1,579 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Test</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+        }
+        /* Custom styles for very small text and tight line height */
+        .text-xxs {
+            font-size: 0.6rem; /* Even smaller than 0.65rem */
+            line-height: 1; /* Even tighter line height */
+        }
+        .text-xxxs {
+            font-size: 0.5rem; /* For the tiniest text */
+            line-height: 1;
+        }
+        .leading-extra-tight {
+            line-height: 1.1; /* Tighter than before */
+        }
+        /* Style for the clickable square (viz mean diameter) */
+        .option-square {
+            width: 0.7rem; /* Even smaller diameter */
+            height: 0.7rem; /* Even smaller diameter */
+            border: 1px solid #d1d5db;
+            border-radius: 0.08rem; /* Tiny rounded corners */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .option-square.selected {
+            background-color: #1E90FF; /* Dodger Blue for selected */
+            border-color: #1E90FF;
+        }
+        .option-square i {
+            color: white;
+            font-size: 0.45rem; /* Even smaller icon size */
+            display: none;
+        }
+        .option-square.selected i {
+            display: block;
+        }
+        /* Styling for buttons - super compact and custom colors */
+        .btn {
+            padding: 0.4rem 0.6rem; /* Reduced padding */
+            border-radius: 0.2rem; /* Smallest diameter rectangular look */
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Subtle shadow */
+            font-size: 0.65rem; /* Slightly larger than text-xxs for readability */
+            display: flex; /* Ensure flex for icon-text alignment */
+            align-items: center;
+            justify-content: center;
+            gap: 0.2rem; /* Reduced gap for icon */
+        }
+        .btn-back {
+            background-color: #4682B4; /* Steel Blue */
+            color: white;
+            border: 1px solid #4682B4;
+        }
+        .btn-back:hover {
+            background-color: #386A91;
+        }
+        .btn-next {
+            background-color: #8A2BE2; /* Blue Violet */
+            color: white;
+            border: 1px solid #8A2BE2;
+        }
+        .btn-next:hover {
+            background-color: #6C21B2;
+        }
+        .btn-submit {
+            background-color: #DC143C; /* Crimson Red */
+            color: white;
+            border: 1px solid #DC143C;
+        }
+        .btn-submit:hover {
+            background-color: #B51130;
+        }
+        .btn-retake {
+            background-color: #FF8C00; /* Dark Orange */
+            color: white;
+            border: 1px solid #FF8C00;
+        }
+        .btn-retake:hover {
+            background-color: #CC7000;
+        }
+        /* Styling for the WhatsApp Channel button on results page */
+        .btn-whatsapp-channel-results {
+            padding: 0.6rem 1rem; /* Slightly larger for prominence */
+            border-radius: 0.3rem;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            font-size: 0.8rem; /* Larger font */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            background-color: #25D366; /* WhatsApp Green */
+            color: white;
+            border: 1px solid #25D366;
+            text-decoration: none; /* For anchor tag */
+            width: 100%; /* Make it full width in its container */
+            margin-bottom: 0.5rem; /* Space below it */
+        }
+        .btn-whatsapp-channel-results:hover {
+            background-color: #1DA851;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+        }
+        .btn-whatsapp-channel-results i {
+            font-size: 1rem; /* Icon size */
+        }
+        .btn:disabled {
+            opacity: 0.4; /* More transparent when disabled */
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Table styling for results - ultra compact */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.6rem; /* Reduced margin */
+            font-size: 0.7rem; /* Even smaller text */
+        }
+        .results-table th, .results-table td {
+            border: 1px solid #e2e8f0;
+            padding: 0.3rem 0.5rem; /* Reduced padding */
+            text-align: left;
+        }
+        .results-table th {
+            background-color: #e3f2fd; /* Lighter blue for headers */
+            font-weight: 600;
+            color: #2196F3; /* Blue text for headers */
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        .results-table td {
+            background-color: #ffffff;
+            color: #374151; /* Darker gray for general text */
+        }
+        .results-table tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+        /* Reduce space between options (row boxes) */
+        #options-container > div {
+            margin-top: 0.2rem !important; /* Tiny margin between option rows */
+            margin-bottom: 0.2rem !important;
+        }
+        /* Adjust overall padding of the main container */
+        .main-container-padding {
+            padding: 0.8rem; /* Very small overall padding */
+        }
+        /* Modal for messages */
+        #modal {
+            position: fixed; /* Use fixed for full overlay */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75); /* Darker overlay */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000; /* Ensure it's on top */
+            padding: 1rem; /* Overall padding for smaller screens */
+            transition: opacity 0.3s ease-in-out; /* Smooth fade in/out */
+        }
+        #modal.hidden {
+            opacity: 0;
+            pointer-events: none; /* Disable clicks when hidden */
+        }
+        #modal .bg-white {
+            padding: 1.5rem; /* Slightly larger padding for central message */
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 250px; /* Max width for message box */
+            width: 90%;
+            color: #333;
+            font-size: 0.8rem; /* Slightly larger font for message */
+            font-weight: 600;
+        }
+        #modal-title {
+            font-size: 1.1rem; /* Larger title for modal message */
+            margin-bottom: 0.75rem;
+            color: #1A202C; /* Darker text */
+        }
+        #modal-content {
+            font-size: 0.85rem; /* Larger text for modal content */
+            color: #4A5568; /* Gray text */
+            margin-bottom: 0; /* No margin if only text */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-1">
+    <div class="bg-white main-container-padding rounded-xl shadow-lg w-full max-w-lg border border-gray-200">
+        <div class="flex justify-between items-center mb-3 border-b pb-2 border-gray-200">
+            <h1 class="text-base font-bold text-gray-800 flex items-center gap-1">
+                <i class="fas fa-book text-gray-900 text-lg"></i> <!-- Black Book Icon -->
+                MDCAT MS 2025
+            </h1>
+            <div id="timer" class="text-sm font-semibold text-blue-600"> <!-- Timer is visible by default -->
+                <i class="fas fa-hourglass-half mr-0.5"></i>00:00
+            </div>
+        </div>
+
+        <!-- Quiz Content Section (Visible by default) -->
+        <div id="quiz-content">
+            <!-- Progress Bar (updates per MCQ) -->
+            <div class="mb-2" id="progress-bar-container">
+                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                    <div id="progress-bar" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-200 ease-out" style="width: 0%"></div>
+                </div>
+                <div class="text-xxxs text-right text-gray-500 mt-0.5" id="progress-text">0% Complete</div>
+            </div>
+
+            <div id="question-container" class="mb-3">
+                <p id="question-text" class="text-xs font-semibold text-gray-900 mb-2 leading-extra-tight"></p>
+                <div id="options-container" class="space-y-2">
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center gap-1 mt-3 pt-2 border-t border-gray-200">
+                <button id="back-btn" class="btn btn-back">
+                    <i class="fas fa-chevron-left text-xxs"></i> Back
+                </button>
+                <button id="next-btn" class="btn btn-next">
+                    Next <i class="fas fa-chevron-right text-xxs"></i>
+                </button>
+                <button id="submit-btn" class="btn btn-submit">
+                    Submit <i class="fas fa-paper-plane text-xxs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Test Results Section (for final quiz results) -->
+        <div id="results-section" class="hidden text-xxs">
+            <h2 id="results-title" class="text-base font-bold text-gray-800 mb-2 text-center">Test Results</h2>
+            <div id="final-results-content" class="space-y-2 mb-4">
+                <!-- Quiz results table will be inserted here by JS -->
+            </div>
+            <p id="results-footer-message" class="text-xxs font-semibold text-blue-700 mt-2 text-center">
+                Stay connected with us for more updates!
+            </p>
+            <div class="flex flex-col items-center gap-2 mt-4">
+                <!-- WhatsApp Channel Button -->
+                <a id="whatsapp-channel-btn" href="https://whatsapp.com/channel/0029VaMh7s1L2YF5dIS1g21E" target="_blank" class="btn-whatsapp-channel-results">
+                    <i class="fab fa-whatsapp"></i> Follow Our Channel
+                </a>
+                <!-- Retake Test Button -->
+                <button id="retake-test-btn-on-results" class="btn btn-retake w-full">
+                    <i class="fas fa-redo-alt mr-0.5"></i> Retake Test
+                </button>
+            </div>
+        </div>
+
+        <!-- Custom Modal for Messages (Time Up!) -->
+        <div id="modal" class="hidden">
+            <div class="bg-white p-3 rounded-lg shadow-xl text-center">
+                <h2 id="modal-title" class="text-sm font-bold mb-2 text-gray-800"></h2>
+                <div id="modal-content" class="text-xxs text-gray-700 mb-3 flex flex-col items-center">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded fired.'); // Debugging: Confirm script starts
+
+            const questions = [
+                { question: "Which planet is known as the 'Red Planet'?", options: ["Earth", "Mars", "Jupiter", "Venus"], answer: "Mars" },
+                { question: "What is the capital city of France?", options: ["Rome", "Berlin", "Paris", "Madrid"], answer: "Paris" },
+                { question: "What is the largest ocean on Earth?", options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"], answer: "Pacific Ocean" },
+                { question: "Which of the following is a prime number?", options: ["4", "6", "7", "9"], answer: "7" },
+                { question: "What is the chemical symbol for water?", options: ["O2", "CO2", "H2O", "NaCl"], answer: "H2O" }
+            ];
+
+            // DOM element references
+            const quizContent = document.getElementById('quiz-content');
+            const resultsSection = document.getElementById('results-section');
+            const resultsTitle = document.getElementById('results-title');
+            const finalResultsContent = document.getElementById('final-results-content');
+            const resultsFooterMessage = document.getElementById('results-footer-message');
+
+            const questionTextElement = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const backBtn = document.getElementById('back-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const timerElement = document.getElementById('timer');
+            const progressBar = document.getElementById('progress-bar');
+            const progressBarContainer = document.getElementById('progress-bar-container');
+            const progressText = document.getElementById('progress-text');
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            const retakeTestBtnOnResults = document.getElementById('retake-test-btn-on-results');
+            const whatsappChannelBtn = document.getElementById('whatsapp-channel-btn');
+
+            // Student data (placeholders as no input page)
+            let studentName = 'User'; // Default name if no input
+            let fatherName = 'N/A'; // Default father name if no input
+
+            let currentQuestionIndex = 0;
+            let selectedAnswers = Array(questions.length).fill(null);
+            let timerInterval;
+            const timePerQuestion = 60; // 1 minute per MCQ
+            const totalTestTime = questions.length * timePerQuestion;
+            let timeLeft = totalTestTime;
+
+            /**
+             * Starts the quiz by showing quiz elements and initializing state.
+             */
+            function startQuiz() {
+                console.log('Starting quiz...'); // Debugging
+                resultsSection.classList.add('hidden'); // Ensure results section is hidden
+                quizContent.classList.remove('hidden'); // Show quiz content
+                timerElement.classList.remove('hidden'); // Show timer
+                progressBarContainer.classList.remove('hidden'); // Show progress bar container
+
+                // Reset quiz state variables for a fresh start
+                currentQuestionIndex = 0;
+                selectedAnswers = Array(questions.length).fill(null);
+                timeLeft = totalTestTime;
+                
+                displayQuestion();
+                startTimer();
+                updateQuestionProgressBar();
+                console.log('Quiz started. Displaying question 1.'); // Debugging
+            }
+
+            /**
+             * Displays the current question and its options.
+             */
+            function displayQuestion() {
+                console.log('Displaying question:', currentQuestionIndex + 1); // Debugging
+                const question = questions[currentQuestionIndex];
+                questionTextElement.textContent = `${currentQuestionIndex + 1}. ${question.question}`;
+                optionsContainer.innerHTML = ''; // Clear previous options
+                console.log('Question text set:', question.question); // Debugging
+                console.log('Options container cleared.'); // Debugging
+
+                question.options.forEach((option, idx) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = `flex items-center gap-1.5 p-1 rounded-md cursor-pointer hover:bg-blue-50 transition-colors duration-200 group
+                                           text-xxs leading-extra-tight text-gray-700 border border-gray-200`;
+                    optionDiv.setAttribute('data-option', option);
+
+                    const square = document.createElement('div');
+                    square.className = 'option-square';
+                    const checkIcon = document.createElement('i');
+                    checkIcon.className = 'fas fa-check';
+                    square.appendChild(checkIcon);
+                    optionDiv.appendChild(square);
+
+                    const optionText = document.createElement('span');
+                    optionText.textContent = option;
+                    optionDiv.appendChild(optionText);
+
+                    if (selectedAnswers[currentQuestionIndex] === option) {
+                        square.classList.add('selected');
+                    }
+
+                    optionDiv.addEventListener('click', () => selectOption(option, square));
+                    optionsContainer.appendChild(optionDiv);
+                    console.log(`Appended option ${idx + 1}: ${option}`); // Debugging each option
+                });
+                console.log('All options appended for current question.'); // Debugging
+
+                updateNavigationButtons();
+                updateQuestionProgressBar();
+            }
+
+            /**
+             * Handles the selection of an option.
+             * @param {string} selectedOption - The text of the selected option.
+             * @param {HTMLElement} clickedSquare - The square element that was clicked.
+             */
+            function selectOption(selectedOption, clickedSquare) {
+                console.log('Option selected:', selectedOption); // Debugging
+                document.querySelectorAll('.option-square').forEach(square => {
+                    square.classList.remove('selected');
+                });
+
+                clickedSquare.classList.add('selected');
+                selectedAnswers[currentQuestionIndex] = selectedOption;
+                console.log('Selected answers updated:', selectedAnswers); // Debugging
+            }
+
+            /**
+             * Updates the state of the navigation buttons (Back, Next, Submit).
+             */
+            function updateNavigationButtons() {
+                backBtn.disabled = currentQuestionIndex === 0;
+                nextBtn.disabled = currentQuestionIndex === questions.length - 1;
+                submitBtn.disabled = currentQuestionIndex !== questions.length - 1;
+            }
+
+            /**
+             * Moves to the next question.
+             */
+            function nextQuestion() {
+                console.log('Next button clicked. Current index:', currentQuestionIndex); // Debugging
+                if (currentQuestionIndex < questions.length - 1) {
+                    currentQuestionIndex++;
+                    displayQuestion();
+                }
+            }
+
+            /**
+             * Moves to the previous question.
+             */
+            function prevQuestion() {
+                console.log('Back button clicked. Current index:', currentQuestionIndex); // Debugging
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    displayQuestion();
+                }
+            }
+
+            /**
+             * Updates the progress bar based on the current question index.
+             */
+            function updateQuestionProgressBar() {
+                const completedQuestions = currentQuestionIndex + 1;
+                const totalQuestions = questions.length;
+                const progressPercentage = (completedQuestions / totalQuestions) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+                progressText.textContent = `${completedQuestions}/${totalQuestions} Questions (${progressPercentage.toFixed(0)}%)`;
+            }
+
+            /**
+             * Calculates the score and shows final quiz results in the results section.
+             */
+            function submitTest() {
+                console.log('Submitting test...'); // Debugging
+                clearInterval(timerInterval);
+
+                let correctMCQs = 0;
+                let leftMCQs = 0;
+                for (let i = 0; i < questions.length; i++) {
+                    if (selectedAnswers[i] === null) {
+                        leftMCQs++;
+                    } else if (selectedAnswers[i] === questions[i].answer) {
+                        correctMCQs++;
+                    }
+                }
+
+                const totalMCQs = questions.length;
+                const incorrectMCQs = totalMCQs - correctMCQs - leftMCQs;
+                const quizPercentage = totalMCQs > 0 ? ((correctMCQs / totalMCQs) * 100).toFixed(2) : 0;
+
+                const finalResultsTableHTML = `
+                    <div class="space-y-2">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="text-center py-1">Your Quiz Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Correct MCQs</td><td>${correctMCQs} / ${totalMCQs}</td></tr>
+                                <tr><td>Incorrect MCQs</td><td>${incorrectMCQs} / ${totalMCQs}</td></tr>
+                                <tr><td>Unattempted MCQs</td><td>${leftMCQs} / ${totalMCQs}</td></tr>
+                                <tr class="font-bold text-blue-700 text-base"><td>Quiz Percentage</td><td>${quizPercentage}%</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                quizContent.classList.add('hidden');
+                timerElement.classList.add('hidden');
+                progressBarContainer.classList.add('hidden');
+
+                resultsTitle.textContent = "Test Results";
+                finalResultsContent.innerHTML = finalResultsTableHTML;
+                resultsFooterMessage.classList.remove('hidden');
+                whatsappChannelBtn.classList.remove('hidden');
+                retakeTestBtnOnResults.classList.remove('hidden');
+                resultsSection.classList.remove('hidden');
+                console.log('Test submitted. Results displayed.'); // Debugging
+            }
+
+            /**
+             * Initializes and updates the global test timer.
+             */
+            function startTimer() {
+                console.log('Timer started.'); // Debugging
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    timerElement.innerHTML = `<i class="fas fa-hourglass-half mr-0.5"></i>${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        submitTest();
+                        showCustomModal('Time Up!', `Your test has been automatically submitted due to time expiry.`, false);
+                        console.log('Time expired. Test submitted automatically.'); // Debugging
+                    }
+                }, 1000);
+            }
+
+            /**
+             * Displays a custom modal message.
+             * @param {string} title - The title for the modal.
+             * @param {string} message - The message content.
+             * @param {boolean} autoHide - True if the modal should auto-hide after a delay.
+             */
+            function showCustomModal(title, message, autoHide = true) {
+                console.log('Showing modal:', title, message); // Debugging
+                modalTitle.textContent = title;
+                modalContent.textContent = message;
+                modal.classList.remove('hidden');
+                modal.style.opacity = 0;
+                setTimeout(() => {
+                    modal.style.opacity = 1;
+                }, 10);
+
+                if (autoHide) {
+                    setTimeout(() => {
+                        modal.style.opacity = 0;
+                        setTimeout(() => {
+                            modal.classList.add('hidden');
+                        }, 300);
+                    }, 2000);
+                }
+            }
+
+            /**
+             * Hides the custom modal.
+             */
+            function hideModal() {
+                console.log('Hiding modal.'); // Debugging
+                modal.style.opacity = 0;
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+
+            /**
+             * Resets the quiz to its initial state and restarts it.
+             */
+            function retakeTest() {
+                console.log('Retake Test initiated.'); // Debugging
+                hideModal();
+                clearInterval(timerInterval);
+
+                resultsSection.classList.add('hidden'); // Hide results section
+                startQuiz(); // Directly start the quiz again (which resets everything)
+                console.log('Quiz reset and restarted.'); // Debugging
+            }
+
+            // --- Event Listeners ---
+            nextBtn.addEventListener('click', nextQuestion);
+            backBtn.addEventListener('click', prevQuestion);
+            submitBtn.addEventListener('click', submitTest);
+            retakeTestBtnOnResults.addEventListener('click', retakeTest);
+            // WhatsApp channel button is an anchor, no JS event listener needed.
+
+            // Initial call to start the quiz immediately on page load
+            console.log('Initial call to startQuiz().'); // Debugging
+            startQuiz();
+        }); // Closing DOMContentLoaded listener
+    </script>
+</body>
+</html>
